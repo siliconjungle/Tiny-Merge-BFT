@@ -45,13 +45,13 @@ export const set = (newParent, seq, key, value) => {
   if (parent === newParent) {
     const currentSeq = seqs[key]
     if (currentSeq === undefined || shouldSet(currentSeq, seq, value, values[key])) {
-      seqs[key] = version
+      seqs[key] = seq
       values[key] = value
     }
   } else if (newParent !== grandparent || newParent > parent) {
     grandparent = parent
     parent = newParent
-    seqs[key] = version
+    seqs[key] = seq
     values[key] = value
   }
 }
