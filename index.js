@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 
 let grandparent = nanoid()
 let parent = nanoid()
+let latestSeq = -1
 const seqs = {}
 const values = {}
 
@@ -36,6 +37,20 @@ const isPrototypePolluted = (key) =>
 
 export const get = (key) => values[key]
 
+export const getNextVersion = () => {
+  if (latestSeq === Number.MAX_SAFE_INTEGER) {
+    latestSeq = -1
+    grandparent = parent
+    parent = nanoid()
+  }
+  latestSeq += 1
+
+  return {
+    seq: latestSeq,
+    parent,
+  }
+}
+
 export const set = (newParent, seq, key, value) => {
   if (isPrototypePolluted(key)) {
     console.warn(`Attempted prototype pollution: ${key}=${value}`)
@@ -47,11 +62,13 @@ export const set = (newParent, seq, key, value) => {
     if (currentSeq === undefined || shouldSet(currentSeq, seq, value, values[key])) {
       seqs[key] = seq
       values[key] = value
+      latestSeq = Math.max(latestSeq, seq)
     }
   } else if (newParent !== grandparent || newParent > parent) {
     grandparent = parent
     parent = newParent
     seqs[key] = seq
     values[key] = value
+    latestSeq = Math.max(latestSeq, seq)
   }
 }
