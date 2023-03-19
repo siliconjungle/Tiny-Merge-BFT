@@ -28,14 +28,6 @@ const encode = (value) => {
 const shouldSetValue = (value, newValue) =>
   encode(newValue) > encode(value)
 
-const innerSet = (seq, key, value) => {
-  const currentSeq = seqs[key]
-  if (currentSeq === undefined || shouldSet(currentSeq, seq, value, values[key])) {
-    seqs[key] = version
-    values[key] = value
-  }
-}
-
 const shouldSet = (seq, seq2, value, value2) =>
   seq2 > seq || (seq2 === seq && shouldSetValue(value, value2))
 
@@ -51,10 +43,15 @@ export const set = (newParent, seq, key, value) => {
   }
 
   if (parent === newParent) {
-    innerSet(seq, key, value)
-  } else if (newParent > parent) {
+    const currentSeq = seqs[key]
+    if (currentSeq === undefined || shouldSet(currentSeq, seq, value, values[key])) {
+      seqs[key] = version
+      values[key] = value
+    }
+  } else if (newParent !== grandparent || newParent > parent) {
     grandparent = parent
     parent = newParent
-    innerSet(seq, key, value)
+    seqs[key] = version
+    values[key] = value
   }
 }
