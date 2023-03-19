@@ -24,10 +24,13 @@ const sortFields = (value) => {
 const encode = (value) => {
   const sortedValue = sortFields(value)
   return JSON.stringify(sortedValue)
-}  
+}
+
+const shouldSetValue = (value, newValue) =>
+  encode(newValue) > encode(value)
 
 const shouldSet = (seq, seq2, value, value2) =>
-  seq2 > seq || (seq2 === seq && encode(value2) > encode(value))
+  seq2 > seq || (seq2 === seq && shouldSetValue(value, value2))
 
 const isPrototypePolluted = (key) =>
   ['__proto__', 'constructor', 'prototype'].includes(key)
@@ -48,7 +51,7 @@ export const getNextVersion = () => {
   }
 }
 
-export const set = (newParent, seq, key, value) => {
+export const set = (oldParent, newParent, seq, key, value) => {
   if (isPrototypePolluted(key)) {
     console.warn(`Attempted prototype pollution: ${key}=${value}`)
     return
@@ -61,7 +64,7 @@ export const set = (newParent, seq, key, value) => {
       values[key] = value
       latestSeq = Math.max(latestSeq, seq)
     }
-  } else if (newParent !== grandparent || newParent > parent) {
+  } else if (oldParent === parent && (newParent !== grandparent || newParent > parent)) {
     grandparent = parent
     parent = newParent
     seqs[key] = seq
