@@ -24,13 +24,10 @@ const sortFields = (value) => {
 const encode = (value) => {
   const sortedValue = sortFields(value)
   return JSON.stringify(sortedValue)
-}
-
-const shouldSetValue = (value, newValue) =>
-  encode(newValue) > encode(value)
+}  
 
 const shouldSet = (seq, seq2, value, value2) =>
-  seq2 > seq || (seq2 === seq && shouldSetValue(value, value2))
+  seq2 > seq || (seq2 === seq && encode(value2) > encode(value))
 
 const isPrototypePolluted = (key) =>
   ['__proto__', 'constructor', 'prototype'].includes(key)
